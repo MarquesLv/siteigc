@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estante Virtual de Minerais - IGC/UFMG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f5f9; /* bg-slate-100 */
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* bg-slate-300 */
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* bg-slate-400 */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Cabeçalho -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between">
+            <div class="flex items-center mb-4 md:mb-0">
+                 <!-- Logo da UFMG adicionado aqui -->
+                 <img src="https://i.postimg.cc/cJWYrK70/logoufmg.png" alt="Logo da UFMG" class="w-16 h-16 mr-4">
+                 <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Estante Virtual de Minerais e Rochas</h1>
+                    <p class="text-sm text-slate-600">Projeto do Setor de Metalogenia - IGC / UFMG</p>
+                 </div>
+            </div>
+             <p class="text-sm text-slate-500 text-center md:text-right">
+                Instituto de Geociências<br>Universidade Federal de Minas Gerais
+            </p>
+        </div>
+    </header>
+
+    <!-- Barra de Busca -->
+    <div class="container mx-auto px-6 py-8">
+        <div class="relative max-w-2xl mx-auto">
+            <input type="text" id="searchInput" class="w-full bg-white border border-slate-300 rounded-lg py-3 px-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Buscar por nome do mineral ou rocha...">
+            <svg class="absolute right-4 top-3.5 h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Galeria de Minerais -->
+    <main class="container mx-auto px-6 pb-12">
+        <div id="mineralGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <!-- Cards de minerais serão inseridos aqui pelo JavaScript -->
+        </div>
+        <p id="noResults" class="text-center text-slate-500 mt-8 text-xl hidden">Nenhum item encontrado.</p>
+    </main>
+
+    <!-- Modal (Janela de Detalhes) -->
+    <div id="mineralModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50 hidden transition-opacity duration-300">
+        <div id="modalContent" class="modal-content bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300">
+            <!-- Conteúdo do modal será inserido aqui -->
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="bg-white mt-12 py-6 border-t border-slate-200">
+        <div class="container mx-auto text-center text-sm text-slate-500">
+            <p>&copy; 2025 - Projeto Estante Virtual do setor de Metalogenia</p>
+            <p>Instituto de Geociências - Universidade Federal de Minas Gerais</p>
+        </div>
+    </footer>
+
+
+    <script>
+        // --- BANCO DE DADOS DE MINERAIS ---
+        const minerals = [
+            {
+                name: "Queluzito",
+                image: "https://i.postimg.cc/RZmgmYns/queluzito.jpg",
+                formula: "Rocha de Manganês (Espessartita, Rodonita)",
+                hardness: "Variável (5.5 - 6.5)",
+                color: "Rosa, avermelhado, preto",
+                crystalSystem: "N/A (Rocha Metamórfica)",
+                description: "Uma rocha metamórfica rica em silicatos de manganês, encontrada na região de Conselheiro Lafaiete, MG. É a rocha que deu origem ao nome da cidade de Queluzito.",
+                occurrence: "Associada a depósitos de manganês no Quadrilátero Ferrífero, Minas Gerais, Brasil.",
+                uses: "Fonte histórica de manganês, mineral de coleção (rodonita)."
+            },
+            {
+                name: "Quartzo-Biotita Xisto",
+                image: "https://i.postimg.cc/J7kw49GM/quartzo.jpg",
+                formula: "Quartzo (SiO₂) + Biotita",
+                hardness: "Variável",
+                color: "Cinza a preto, com brilho prateado",
+                crystalSystem: "N/A (Rocha Metamórfica)",
+                description: "Rocha metamórfica que exibe xistosidade (foliação) devido à orientação paralela dos cristais de biotita (mica preta). Os grãos de quartzo formam camadas intercaladas.",
+                occurrence: "Comum em terrenos metamórficos de médio a alto grau em todo o mundo.",
+                uses: "Pode ser usada como pedra de revestimento, mas seu principal interesse é geológico."
+            },
+            {
+                name: "Laterita Aurífera",
+                image: "https://i.postimg.cc/SNMPk81s/laterita-au.jpg",
+                formula: "Óxidos de Fe/Al + Ouro (Au)",
+                hardness: "Baixa (friável)",
+                color: "Amarelo, vermelho, marrom",
+                crystalSystem: "N/A (Solo/Rocha Residual)",
+                description: "Um tipo de solo/rocha superficial formado pela intensa meteorização de rochas em climas tropicais. O ouro, sendo resistente, concentra-se residualmente durante este processo.",
+                occurrence: "Zonas de intemperismo em regiões com rochas-fonte de ouro, como na Amazônia e partes de Minas Gerais.",
+                uses: "Minério de ouro de baixo custo de extração (garimpo)."
+            },
+            {
+                name: "Minério de Ferro - N4",
+                image: "https://i.postimg.cc/Gm9xb1mj/mineirodeferron4.jpg",
+                formula: "Principalmente Hematita (Fe₂O₃)",
+                hardness: "Alta (compacto)",
+                color: "Cinza-azulado metálico",
+                crystalSystem: "N/A (Minério)",
+                description: "Refere-se ao minério de ferro de altíssimo teor (acima de 66% Fe) extraído do corpo N4 da Serra dos Carajás, no Pará. É considerado um dos melhores minérios de ferro do mundo.",
+                occurrence: "Província Mineral de Carajás, Pará, Brasil.",
+                uses: "Principal matéria-prima para a produção de aço de alta qualidade na siderurgia global."
+            },
+            {
+                name: "Hematita Dura",
+                image: "https://i.postimg.cc/pXP9HNB1/hametitadura.jpg",
+                formula: "Fe₂O₃",
+                hardness: "5.5 - 6.5",
+                color: "Cinza-aço, preto",
+                crystalSystem: "Trigonal",
+                description: "Uma variedade de hematita maciça, compacta e de alta dureza. É um tipo de minério de ferro de alto teor, frequentemente encontrado em corpos de minério que não sofreram muita alteração.",
+                occurrence: "Comum em grandes depósitos de ferro, como no Quadrilátero Ferrífero (MG) e em Carajás (PA).",
+                uses: "Minério de ferro de alta qualidade para a indústria siderúrgica."
+            },
+            {
+                name: "Hematita",
+                image: "https://i.postimg.cc/g0bFCpVx/hematita.jpg",
+                formula: "Fe₂O₃",
+                hardness: "5.5 - 6.5",
+                color: "Preto a cinza-aço, vermelho em pó",
+                crystalSystem: "Trigonal",
+                description: "O mais importante minério de ferro. Seu nome vem da palavra grega para 'sangue' (haima), pois sua forma em pó é vermelha. Pode ocorrer em formas especular (brilhante), terrosa ou compacta.",
+                occurrence: "Encontrada em rochas sedimentares, metamórficas e ígneas. O Brasil e a Austrália são os maiores produtores mundiais.",
+                uses: "Principal fonte de ferro para a produção de aço, pigmentos (ocre), e como gema."
+            },
+            {
+                name: "Itabirito",
+                image: "https://i.postimg.cc/65xP6c7P/itabirito.jpg",
+                formula: "Hematita (Fe₂O₃) + Quartzo (SiO₂)",
+                hardness: "Variável (5.5 - 7)",
+                color: "Bandas de cinza-metálico e vermelho/branco",
+                crystalSystem: "N/A (Rocha Metamórfica)",
+                description: "Uma rocha metamórfica laminada, composta por camadas alternadas de hematita e quartzo. É um tipo de Formação Ferrífera Bandada (BIF) e o principal minério de ferro do Quadrilátero Ferrífero.",
+                occurrence: "O nome vem da cidade de Itabirito, em Minas Gerais, coração do Quadrilátero Ferrífero.",
+                uses: "A mais importante fonte de minério de ferro em Minas Gerais e uma das mais importantes do mundo."
+            }
+        ];
+
+        // --- LÓGICA DA APLICAÇÃO ---
+
+        const mineralGrid = document.getElementById('mineralGrid');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+        const modal = document.getElementById('mineralModal');
+        const modalContent = document.getElementById('modalContent');
+
+        function renderMinerals(mineralsToRender) {
+            mineralGrid.innerHTML = '';
+            noResults.classList.toggle('hidden', mineralsToRender.length > 0);
+
+            mineralsToRender.forEach(mineral => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg overflow-hidden shadow-md cursor-pointer transform hover:scale-105 hover:shadow-xl transition-all duration-300';
+                card.innerHTML = `
+                    <img src="${mineral.image}" alt="Imagem de ${mineral.name}" class="w-full h-48 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/64748b?text=Imagem+N/D';">
+                    <div class="p-4">
+                        <h3 class="font-bold text-md text-center text-slate-800">${mineral.name}</h3>
+                    </div>
+                `;
+                card.addEventListener('click', () => openModal(mineral));
+                mineralGrid.appendChild(card);
+            });
+        }
+
+        function openModal(mineral) {
+            modalContent.innerHTML = `
+                <div class="p-6 md:p-8">
+                    <div class="flex justify-between items-start mb-6">
+                        <h2 class="text-3xl font-bold text-blue-800">${mineral.name}</h2>
+                        <button id="closeModal" class="text-slate-400 hover:text-slate-800 text-4xl leading-none font-bold">&times;</button>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <img src="${mineral.image}" alt="Imagem de ${mineral.name}" class="w-full h-auto rounded-lg shadow-md" onerror="this.onerror=null;this.src='https://placehold.co/400x400/e2e8f0/64748b?text=Imagem+N/D';">
+                        <div class="space-y-3 text-slate-600">
+                            <p><strong>Composição Principal:</strong> <span class="font-mono bg-slate-100 text-slate-800 px-2 py-1 rounded text-sm">${mineral.formula}</span></p>
+                            <p><strong>Dureza (Mohs):</strong> ${mineral.hardness}</p>
+                            <p><strong>Cor:</strong> ${mineral.color}</p>
+                            <p><strong>Tipo:</strong> ${mineral.crystalSystem}</p>
+                        </div>
+                    </div>
+                    <div class="mt-8 space-y-4 text-slate-700">
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-900 mb-2 border-b-2 border-slate-200 pb-1">Descrição</h4>
+                            <p class="leading-relaxed">${mineral.description}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-900 mb-2 border-b-2 border-slate-200 pb-1">Ocorrência</h4>
+                            <p class="leading-relaxed">${mineral.occurrence}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-slate-900 mb-2 border-b-2 border-slate-200 pb-1">Usos e Aplicações</h4>
+                            <p class="leading-relaxed">${mineral.uses}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                document.getElementById('closeModal').focus();
+            }, 10);
+
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredMinerals = minerals.filter(mineral =>
+                mineral.name.toLowerCase().includes(searchTerm)
+            );
+            renderMinerals(filteredMinerals);
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+        });
+
+        renderMinerals(minerals);
+    </script>
+</body>
+</html>
